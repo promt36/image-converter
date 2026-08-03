@@ -1,402 +1,316 @@
-"use client";
+import Link from "next/link";
 
-import { useRef, useState } from "react";
+export const metadata = {
+  title: "ImageConvert – Free Online Image Converter",
+  description:
+    "Convert JPG, PNG, WEBP and AVIF images online for free. Batch convert up to 10 files privately inside your browser.",
+};
 
-export default function Home() {
-  const inputRef = useRef(null);
+const popularTools = [
+  {
+    title: "PNG to JPG",
+    href: "/png-to-jpg",
+    source: "PNG",
+    target: "JPG",
+    description: "Convert PNG images to compatible JPG files.",
+  },
+  {
+    title: "JPG to PNG",
+    href: "/jpg-to-png",
+    source: "JPG",
+    target: "PNG",
+    description: "Convert JPG images to lossless PNG files.",
+  },
+  {
+    title: "JPG to WEBP",
+    href: "/jpg-to-webp",
+    source: "JPG",
+    target: "WEBP",
+    description: "Create lightweight WEBP images from JPG files.",
+  },
+  {
+    title: "WEBP to JPG",
+    href: "/webp-to-jpg",
+    source: "WEBP",
+    target: "JPG",
+    description: "Convert WEBP images to widely supported JPG files.",
+  },
+  {
+    title: "PNG to AVIF",
+    href: "/png-to-avif",
+    source: "PNG",
+    target: "AVIF",
+    description: "Convert PNG images to efficient AVIF files.",
+  },
+  {
+    title: "AVIF to JPG",
+    href: "/avif-to-jpg",
+    source: "AVIF",
+    target: "JPG",
+    description: "Convert AVIF images to easy-to-use JPG files.",
+  },
+];
 
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState("");
-  const [format, setFormat] = useState("image/jpeg");
-  const [quality, setQuality] = useState(90);
-  const [downloadUrl, setDownloadUrl] = useState("");
-  const [convertedSize, setConvertedSize] = useState("");
-  const [isConverting, setIsConverting] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+const faqs = [
+  {
+    question: "Is ImageConvert free to use?",
+    answer:
+      "Yes. All current image conversion tools are free and do not require an account.",
+  },
+  {
+    question: "Are my images uploaded to a server?",
+    answer:
+      "No. Supported image conversions happen locally inside your browser.",
+  },
+  {
+    question: "How many images can I convert at once?",
+    answer:
+      "You can currently upload and convert up to 10 images in one batch.",
+  },
+  {
+    question: "Can I download all converted images together?",
+    answer:
+      "Yes. You can download images separately or save the complete batch as one ZIP file.",
+  },
+];
 
-  function selectFile(selectedFile) {
-    if (!selectedFile) return;
-
-    if (!selectedFile.type.startsWith("image/")) {
-      alert("Please choose an image file.");
-      return;
-    }
-
-    if (preview) {
-      URL.revokeObjectURL(preview);
-    }
-
-    const previewUrl = URL.createObjectURL(selectedFile);
-
-    setFile(selectedFile);
-    setPreview(previewUrl);
-    setDownloadUrl("");
-    setConvertedSize("");
-  }
-
-  function handleFileChange(event) {
-    selectFile(event.target.files?.[0]);
-  }
-
-  function handleDrop(event) {
-    event.preventDefault();
-    setIsDragging(false);
-    selectFile(event.dataTransfer.files?.[0]);
-  }
-
-  function formatFileSize(bytes) {
-    if (bytes < 1024) return `${bytes} B`;
-
-    if (bytes < 1024 * 1024) {
-      return `${(bytes / 1024).toFixed(1)} KB`;
-    }
-
-    return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
-  }
-
-  function getExtension() {
-    if (format === "image/jpeg") return "jpg";
-    if (format === "image/webp") return "webp";
-    return "png";
-  }
-
-  async function convertImage() {
-    if (!file) {
-      alert("Please upload an image first.");
-      return;
-    }
-
-    setIsConverting(true);
-    setDownloadUrl("");
-    setConvertedSize("");
-
-    const originalUrl = URL.createObjectURL(file);
-    const image = new Image();
-
-    image.onload = () => {
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-
-      canvas.width = image.naturalWidth;
-      canvas.height = image.naturalHeight;
-
-      if (!context) {
-        alert("Your browser could not process this image.");
-        setIsConverting(false);
-        URL.revokeObjectURL(originalUrl);
-        return;
-      }
-
-      if (format === "image/jpeg") {
-        context.fillStyle = "#ffffff";
-        context.fillRect(0, 0, canvas.width, canvas.height);
-      }
-
-      context.drawImage(image, 0, 0);
-
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            alert("The image could not be converted.");
-            setIsConverting(false);
-            URL.revokeObjectURL(originalUrl);
-            return;
-          }
-
-          const convertedUrl = URL.createObjectURL(blob);
-
-          setDownloadUrl(convertedUrl);
-          setConvertedSize(formatFileSize(blob.size));
-          setIsConverting(false);
-          URL.revokeObjectURL(originalUrl);
-        },
-        format,
-        quality / 100
-      );
-    };
-
-    image.onerror = () => {
-      alert("This image format could not be opened.");
-      setIsConverting(false);
-      URL.revokeObjectURL(originalUrl);
-    };
-
-    image.src = originalUrl;
-  }
-
-  function resetConverter() {
-    if (preview) URL.revokeObjectURL(preview);
-    if (downloadUrl) URL.revokeObjectURL(downloadUrl);
-
-    setFile(null);
-    setPreview("");
-    setDownloadUrl("");
-    setConvertedSize("");
-    setFormat("image/jpeg");
-    setQuality(90);
-
-    if (inputRef.current) {
-      inputRef.current.value = "";
-    }
-  }
-
+export default function HomePage() {
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
-          <a href="#" className="text-2xl font-black tracking-tight">
-            ImageConvert
-          </a>
+    <div className="bg-slate-50 text-slate-900">
+      <section className="relative overflow-hidden border-b border-slate-200 px-5 py-20 md:py-28">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
 
-          <nav className="hidden items-center gap-7 text-sm font-semibold md:flex">
-            <a href="#converter" className="hover:text-blue-600">
-              Converter
-            </a>
-            <a href="#features" className="hover:text-blue-600">
-              Features
-            </a>
-            <a href="#how-it-works" className="hover:text-blue-600">
-              How It Works
-            </a>
-          </nav>
-        </div>
-      </header>
+        <div className="absolute left-[-100px] top-[-120px] h-80 w-80 rounded-full bg-blue-200/40 blur-3xl" />
 
-      <section className="px-5 py-14 md:py-20">
-        <div className="mx-auto max-w-6xl text-center">
-          <p className="font-bold text-blue-600">
-            Free Online Image Converter
-          </p>
+        <div className="absolute bottom-[-150px] right-[-100px] h-96 w-96 rounded-full bg-indigo-200/40 blur-3xl" />
 
-          <h1 className="mx-auto mt-4 max-w-4xl text-4xl font-black leading-tight tracking-tight md:text-6xl">
-            Convert JPG, PNG and WEBP images in seconds
-          </h1>
-
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-            Upload an image, choose your output format and download the new
-            file. Your image stays inside your browser.
-          </p>
-
-          <div
-            id="converter"
-            className="mx-auto mt-12 max-w-3xl rounded-3xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-200/60 md:p-8"
-          >
-            <div
-              onDragEnter={(event) => {
-                event.preventDefault();
-                setIsDragging(true);
-              }}
-              onDragOver={(event) => event.preventDefault()}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={handleDrop}
-              onClick={() => inputRef.current?.click()}
-              className={`cursor-pointer rounded-2xl border-2 border-dashed p-8 transition md:p-12 ${
-                isDragging
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-slate-300 bg-slate-50 hover:border-blue-500 hover:bg-blue-50"
-              }`}
-            >
-              <input
-                ref={inputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-
-              {preview ? (
-                <div className="flex flex-col items-center">
-                  <img
-                    src={preview}
-                    alt="Selected image preview"
-                    className="max-h-72 max-w-full rounded-xl object-contain shadow"
-                  />
-
-                  <p className="mt-5 font-bold">{file?.name}</p>
-
-                  <p className="mt-1 text-sm text-slate-500">
-                    {file ? formatFileSize(file.size) : ""}
-                  </p>
-
-                  <p className="mt-3 text-sm font-semibold text-blue-600">
-                    Click or drop another image to replace it
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-3xl">
-                    ↑
-                  </div>
-
-                  <p className="mt-5 text-xl font-bold">
-                    Drop your image here
-                  </p>
-
-                  <p className="mt-2 text-slate-500">
-                    or click to choose a file
-                  </p>
-
-                  <p className="mt-4 text-sm text-slate-400">
-                    JPG, PNG and WEBP supported
-                  </p>
-                </div>
-              )}
+        <div className="relative mx-auto max-w-6xl">
+          <div className="mx-auto max-w-4xl text-center">
+            <div className="inline-flex items-center rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-sm font-bold text-blue-700 shadow-sm backdrop-blur">
+              Fast, free and private image conversion
             </div>
 
-            <div className="mt-6 grid gap-5 text-left md:grid-cols-2">
-              <div>
-                <label className="mb-2 block font-bold">
-                  Convert image to
-                </label>
+            <h1 className="mt-7 text-5xl font-black leading-tight tracking-tight md:text-7xl">
+              Convert images online
+              <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                in just a few seconds
+              </span>
+            </h1>
 
-                <select
-                  value={format}
-                  onChange={(event) => {
-                    setFormat(event.target.value);
-                    setDownloadUrl("");
-                    setConvertedSize("");
-                  }}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                >
-                  <option value="image/jpeg">JPG</option>
-                  <option value="image/png">PNG</option>
-                  <option value="image/webp">WEBP</option>
-                </select>
+            <p className="mx-auto mt-7 max-w-3xl text-lg leading-8 text-slate-600 md:text-xl">
+              Convert JPG, PNG, WEBP and AVIF images directly in your browser.
+              Process up to 10 files together and download the results
+              individually or as one ZIP archive.
+            </p>
+
+            <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
+              <Link
+                href="/tools"
+                className="rounded-2xl bg-blue-600 px-8 py-4 font-black text-white shadow-lg shadow-blue-200 transition hover:-translate-y-1 hover:bg-blue-700 hover:shadow-xl"
+              >
+                Explore All Tools
+              </Link>
+
+              <Link
+                href="/png-to-jpg"
+                className="rounded-2xl border border-slate-300 bg-white px-8 py-4 font-black text-slate-900 shadow-sm transition hover:-translate-y-1 hover:border-blue-400 hover:text-blue-600 hover:shadow-lg"
+              >
+                Try PNG to JPG
+              </Link>
+            </div>
+
+            <div className="mx-auto mt-14 grid max-w-4xl gap-4 sm:grid-cols-3">
+              <div className="rounded-3xl border border-white/70 bg-white/80 p-6 shadow-lg backdrop-blur">
+                <p className="text-4xl font-black text-blue-600">12</p>
+                <p className="mt-2 font-bold text-slate-700">
+                  Conversion tools
+                </p>
               </div>
 
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <label className="font-bold">Quality</label>
-                  <span className="text-sm font-bold text-blue-600">
-                    {quality}%
+              <div className="rounded-3xl border border-white/70 bg-white/80 p-6 shadow-lg backdrop-blur">
+                <p className="text-4xl font-black text-blue-600">10</p>
+                <p className="mt-2 font-bold text-slate-700">
+                  Images per batch
+                </p>
+              </div>
+
+              <div className="rounded-3xl border border-white/70 bg-white/80 p-6 shadow-lg backdrop-blur">
+                <p className="text-4xl font-black text-blue-600">100%</p>
+                <p className="mt-2 font-bold text-slate-700">
+                  Browser processing
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white px-5 py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
+            <div>
+              <p className="font-black text-blue-600">Popular converters</p>
+
+              <h2 className="mt-3 text-3xl font-black tracking-tight md:text-5xl">
+                Choose a tool and start converting
+              </h2>
+
+              <p className="mt-4 max-w-2xl leading-7 text-slate-600">
+                Select one of the most frequently used image conversion tools.
+              </p>
+            </div>
+
+            <Link
+              href="/tools"
+              className="font-black text-blue-600 transition hover:text-blue-800"
+            >
+              View all 12 tools →
+            </Link>
+          </div>
+
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {popularTools.map((tool) => (
+              <Link
+                key={tool.href}
+                href={tool.href}
+                className="group rounded-3xl border border-slate-200 bg-white p-7 shadow-sm transition duration-300 hover:-translate-y-2 hover:border-blue-300 hover:shadow-2xl"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="rounded-xl bg-blue-100 px-3 py-2 text-sm font-black text-blue-700">
+                    {tool.source}
+                  </span>
+
+                  <span className="text-xl font-black text-slate-400 transition group-hover:translate-x-1">
+                    →
+                  </span>
+
+                  <span className="rounded-xl bg-slate-950 px-3 py-2 text-sm font-black text-white">
+                    {tool.target}
                   </span>
                 </div>
 
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  value={quality}
-                  onChange={(event) => {
-                    setQuality(Number(event.target.value));
-                    setDownloadUrl("");
-                    setConvertedSize("");
-                  }}
-                  className="w-full"
-                />
+                <h3 className="mt-7 text-2xl font-black transition group-hover:text-blue-600">
+                  {tool.title} Converter
+                </h3>
 
-                <p className="mt-2 text-xs text-slate-500">
-                  Quality mainly affects JPG and WEBP files.
+                <p className="mt-3 leading-7 text-slate-600">
+                  {tool.description}
                 </p>
+
+                <p className="mt-7 font-black text-blue-600">
+                  Open converter →
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-slate-200 px-5 py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="font-black text-blue-600">Why ImageConvert?</p>
+
+            <h2 className="mt-3 text-3xl font-black tracking-tight md:text-5xl">
+              Built for speed, privacy and simplicity
+            </h2>
+          </div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <article className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-2xl font-black text-blue-700">
+                01
               </div>
-            </div>
 
-            <button
-              onClick={convertImage}
-              disabled={isConverting}
-              className="mt-7 w-full rounded-xl bg-blue-600 px-6 py-4 text-lg font-black text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
-            >
-              {isConverting ? "Converting..." : "Convert Image"}
-            </button>
+              <h3 className="mt-6 text-2xl font-black">Batch conversion</h3>
 
-            {downloadUrl && (
-              <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
-                <p className="font-bold text-emerald-800">
-                  Your image is ready
-                </p>
+              <p className="mt-4 leading-7 text-slate-600">
+                Convert up to 10 images together instead of processing every
+                file separately.
+              </p>
+            </article>
 
-                <p className="mt-1 text-sm text-emerald-700">
-                  Converted file size: {convertedSize}
-                </p>
-
-                <a
-                  href={downloadUrl}
-                  download={`converted-image.${getExtension()}`}
-                  className="mt-4 block rounded-xl bg-emerald-600 px-6 py-4 font-black text-white transition hover:bg-emerald-700"
-                >
-                  Download Converted Image
-                </a>
+            <article className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-2xl font-black text-blue-700">
+                02
               </div>
-            )}
 
-            {file && (
-              <button
-                onClick={resetConverter}
-                className="mt-4 text-sm font-bold text-slate-500 hover:text-slate-900"
+              <h3 className="mt-6 text-2xl font-black">Private processing</h3>
+
+              <p className="mt-4 leading-7 text-slate-600">
+                Your files stay inside your browser during supported image
+                conversions.
+              </p>
+            </article>
+
+            <article className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-2xl font-black text-blue-700">
+                03
+              </div>
+
+              <h3 className="mt-6 text-2xl font-black">Download as ZIP</h3>
+
+              <p className="mt-4 leading-7 text-slate-600">
+                Download each file separately or save the complete converted
+                batch inside one ZIP archive.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-5 py-20">
+        <div className="mx-auto max-w-6xl rounded-[2rem] bg-gradient-to-r from-blue-600 to-indigo-600 px-7 py-14 text-center text-white shadow-2xl md:px-12">
+          <p className="font-bold text-blue-100">
+            Start converting without registration
+          </p>
+
+          <h2 className="mx-auto mt-3 max-w-3xl text-3xl font-black md:text-5xl">
+            All the image conversion tools you need in one place
+          </h2>
+
+          <p className="mx-auto mt-5 max-w-2xl leading-8 text-blue-100">
+            Browse all JPG, PNG, WEBP and AVIF conversion tools and process your
+            images directly in the browser.
+          </p>
+
+          <Link
+            href="/tools"
+            className="mt-8 inline-block rounded-2xl bg-white px-8 py-4 font-black text-blue-700 shadow-lg transition hover:-translate-y-1 hover:bg-blue-50"
+          >
+            Browse Image Tools
+          </Link>
+        </div>
+      </section>
+
+      <section id="faq" className="bg-white px-5 py-20">
+        <div className="mx-auto max-w-4xl">
+          <div className="text-center">
+            <p className="font-black text-blue-600">Questions and answers</p>
+
+            <h2 className="mt-3 text-3xl font-black tracking-tight md:text-5xl">
+              Frequently asked questions
+            </h2>
+          </div>
+
+          <div className="mt-12 space-y-4">
+            {faqs.map((faq) => (
+              <details
+                key={faq.question}
+                className="group rounded-2xl border border-slate-200 bg-slate-50 p-6 transition open:border-blue-300 open:bg-white open:shadow-lg"
               >
-                Remove image and start again
-              </button>
-            )}
+                <summary className="cursor-pointer font-black">
+                  {faq.question}
+                </summary>
+
+                <p className="mt-4 leading-7 text-slate-600">
+                  {faq.answer}
+                </p>
+              </details>
+            ))}
           </div>
         </div>
       </section>
-
-      <section
-        id="features"
-        className="mx-auto grid max-w-6xl gap-6 px-5 pb-16 md:grid-cols-3"
-      >
-        <article className="rounded-2xl border border-slate-200 bg-white p-7">
-          <h2 className="text-xl font-black">Fast Conversion</h2>
-          <p className="mt-3 leading-7 text-slate-600">
-            Convert common image formats quickly without waiting for a server
-            upload.
-          </p>
-        </article>
-
-        <article className="rounded-2xl border border-slate-200 bg-white p-7">
-          <h2 className="text-xl font-black">Private and Secure</h2>
-          <p className="mt-3 leading-7 text-slate-600">
-            Images are processed locally in your browser and are not uploaded
-            to our server.
-          </p>
-        </article>
-
-        <article className="rounded-2xl border border-slate-200 bg-white p-7">
-          <h2 className="text-xl font-black">Free to Use</h2>
-          <p className="mt-3 leading-7 text-slate-600">
-            Convert JPG, PNG and WEBP files without creating an account.
-          </p>
-        </article>
-      </section>
-
-      <section
-        id="how-it-works"
-        className="border-t border-slate-200 bg-white px-5 py-16"
-      >
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl font-black">How it works</h2>
-
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            <div>
-              <p className="text-3xl font-black text-blue-600">1</p>
-              <h3 className="mt-3 font-black">Upload</h3>
-              <p className="mt-2 text-slate-600">
-                Choose or drag an image into the converter.
-              </p>
-            </div>
-
-            <div>
-              <p className="text-3xl font-black text-blue-600">2</p>
-              <h3 className="mt-3 font-black">Convert</h3>
-              <p className="mt-2 text-slate-600">
-                Select JPG, PNG or WEBP and choose the quality.
-              </p>
-            </div>
-
-            <div>
-              <p className="text-3xl font-black text-blue-600">3</p>
-              <h3 className="mt-3 font-black">Download</h3>
-              <p className="mt-2 text-slate-600">
-                Save the converted image directly to your computer.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <footer className="border-t border-slate-200 bg-slate-950 px-5 py-8 text-center text-sm text-slate-400">
-        © 2026 ImageConvert. Free online image conversion tools.
-      </footer>
-    </main>
+    </div>
   );
 }
