@@ -32,57 +32,40 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-  ),
+  metadataBase: new URL("https://image-converter-red.vercel.app"),
 
   title: {
-    default: "ImageConvert – Free Online Image Converter",
+    default: "ImageConvert - Free Online Image Converter",
     template: "%s | ImageConvert",
   },
 
   description:
-    "Convert JPG, PNG, WEBP and AVIF images online for free. Fast, private and browser-based image conversion.",
-
-  applicationName: "ImageConvert",
+    "Convert JPG, PNG, WEBP and AVIF images online for free. Fast, private and browser-based image tools.",
 
   keywords: [
     "image converter",
-    "convert images online",
-    "JPG converter",
-    "PNG converter",
-    "WEBP converter",
-    "AVIF converter",
-    "batch image converter",
+    "png to jpg",
+    "jpg to png",
+    "webp converter",
+    "avif converter",
+    "compress image",
   ],
 
-  authors: [{ name: "ImageConvert" }],
-  creator: "ImageConvert",
-  publisher: "ImageConvert",
-
   openGraph: {
-    type: "website",
-    locale: "en_US",
+    title: "ImageConvert",
+    description:
+      "Free online image converter and compression tools.",
     url: "/",
     siteName: "ImageConvert",
-    title: "ImageConvert – Free Online Image Converter",
-    description:
-      "Convert JPG, PNG, WEBP and AVIF images online for free. Process up to 10 files privately inside your browser.",
+    type: "website",
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "ImageConvert – Free Online Image Converter",
+    title: "ImageConvert",
     description:
-      "Convert JPG, PNG, WEBP and AVIF images online for free. Fast, private and browser-based.",
+      "Free online image converter and compression tools.",
   },
-
-  robots: {
-    index: true,
-    follow: true,
-  },
-
-  category: "technology",
 };
 
 export default function RootLayout({ children }) {
