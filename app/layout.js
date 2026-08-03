@@ -42,6 +42,10 @@ export const metadata = {
   description:
     "Convert JPG, PNG, WEBP and AVIF images online for free. Fast, private and browser-based image tools.",
 
+  verification: {
+    google: "OCiXEvc4F7L7PclM6w2rZ6BzCefcdbqYlecCBqggfQ0",
+  },
+
   keywords: [
     "image converter",
     "png to jpg",
