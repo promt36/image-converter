@@ -1,11 +1,9 @@
-const baseUrl = "https://yourdomain.com";
-
 export default function robots() {
   return {
     rules: {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: "https://image-convert.net/sitemap.xml",
   };
 }
